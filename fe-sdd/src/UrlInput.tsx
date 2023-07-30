@@ -56,8 +56,7 @@ const UrlInput: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <select value={selectedOption} onChange={handleFolderChange}>
-        <option value="">-- Select an option --</option>
+      <select className="select select-bordered w-full max-w-xs" value={selectedOption} onChange={handleFolderChange}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
