@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-
-interface LoraInfo {
-  name: string
-  token: string
-}
+import { getLoraInfos, LoraInfo } from './api/api';
 
 const itemStyles = {
   display: 'flex',
@@ -43,41 +39,21 @@ const Item = ({ item }: {item: LoraInfo}) => {
 };
 
 const LoraInfoComponent = () => {
-  const [items, setItems] = useState<LoraInfo[]>([]);
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-      .then(() => {
-        console.log('Text copied to clipboard:', text);
-      })
-      .catch((error) => {
-        console.error('Failed to copy text to clipboard:', error);
-      });
+  const [loras, setLora] = useState<LoraInfo[]>([]);
+
+  const getLora = async () => {
+    setLora(await getLoraInfos())
   }
 
   useEffect(() => {
-    const address = 'http://192.168.1.10:8080/info/lora';
-    fetch(address, {method: 'GET'})
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then((responseData) => {
-        let info: LoraInfo[] = JSON.parse(responseData)
-        setItems(info)
-        console.log(responseData);
-      })
-      .catch((error) => {
-        console.error(`Error: ${error.message}`);
-      });   
+    getLora()
   }, []);
 
-  if (items.length > 0) {
+  if (loras.length > 0) {
     return <div>
       <h2>LoraInfo</h2>
       <div>
-      {items.map((item, index) => {
+      {loras.map((item, index) => {
         return <Item key={index} item={item} />;
       })}
       </div>

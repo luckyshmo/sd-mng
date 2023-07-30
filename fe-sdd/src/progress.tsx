@@ -22,7 +22,7 @@ const ProgressComponent = () => {
   }
 
   useEffect(() => {
-    const ws = new WebSocket('ws://192.168.1.10:8080/progress');
+    const ws = new WebSocket('ws://localhost:8080/progress');
     console.log(ws.url)
     setSocket(ws);
 

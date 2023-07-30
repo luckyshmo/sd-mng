@@ -1,4 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
+import { downloadFile } from './api/api';
 
 type Option = {
   value: string;
@@ -39,7 +40,7 @@ const UrlInput: React.FC = () => {
     return urlRegex.test(url);
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
     if (!isValidUrl(url)) {
@@ -47,25 +48,10 @@ const UrlInput: React.FC = () => {
       return
     }
 
-    
-    const address = 'http://192.168.1.10:8080/';
-    const urlParams = new URLSearchParams({
-      url: url,
-      folder: selectedOption,
-    });
-    fetch(address + '?' + urlParams.toString(), {method: 'POST'})
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then((responseData) => {
-        console.log(responseData);
-      })
-      .catch((error) => {
-        console.error(`Error: ${error.message}`);
-      });
+    const message = await downloadFile(url, selectedOption)
+    if (message) {
+      alert(message)
+    }
   };
 
   return (
