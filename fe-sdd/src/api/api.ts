@@ -28,9 +28,9 @@ export async function downloadFile(url: string, folder: string): Promise<string>
   });
 
   try {
-    const response = await axios.post(address, urlParams);
+    const response = await axios.post(address + "?" + urlParams.toString());
 
-    if (response.status !== 201) {
+    if (response.status !== 200) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
