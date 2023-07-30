@@ -1,20 +1,23 @@
 import { observer } from 'mobx-react-lite'
-import {downloadStore} from '../store/store'
-
+import { downloadStore } from '../store/store'
 
 function ProgressItems() {
   if (downloadStore.downloads.length === 0) {
     return <div>No downloads</div>
   }
   return (
-  <div>
+    <div>
       {downloadStore.downloads.map((item, index) => {
-        return <div key={index}>
-          <p>{item.name}: {item.percentage}%</p>
-        </div>;
+        return (
+          <div key={index}>
+            <p>
+              {item.name}: {item.percentage}%
+            </p>
+          </div>
+        )
       })}
-      </div>
-      )
+    </div>
+  )
 }
 
 export default observer(ProgressItems)

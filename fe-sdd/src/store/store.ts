@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable } from 'mobx'
 
 export interface DownloadModel {
   id: string
@@ -7,18 +7,18 @@ export interface DownloadModel {
 }
 
 class DownloadsStore {
-  downloads: DownloadModel[] = [];
+  downloads: DownloadModel[] = []
 
   constructor() {
-    makeAutoObservable(this);
+    makeAutoObservable(this)
   }
 
   addDownload = (d: DownloadModel) => {
-    this.downloads.push(d);
-  };
+    this.downloads.push(d)
+  }
 
   updDownload = (id: string, updatedItem: DownloadModel) => {
-    const itemIndex = this.downloads.findIndex((item) => item.id === id);
+    const itemIndex = this.downloads.findIndex((item) => item.id === id)
     if (itemIndex !== -1) {
       this.downloads[itemIndex] = updatedItem
     } else {
@@ -30,7 +30,7 @@ class DownloadsStore {
   }
 
   removeDownload = (id: string) => {
-    this.downloads = this.downloads.filter(d => d.id !== id)
+    this.downloads = this.downloads.filter((d) => d.id !== id)
   }
 }
 

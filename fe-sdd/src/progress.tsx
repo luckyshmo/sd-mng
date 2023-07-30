@@ -1,16 +1,12 @@
-
-import DownloadProgress from './components/downloadProgress';
-
-
+import DownloadProgress from './components/downloadProgress'
 
 const ProgressComponent = () => {
-
-
-    return <div>
+  return (
+    <div>
       <h2>Progress</h2>
       <DownloadProgress />
     </div>
+  )
+}
 
-};
-
-export default ProgressComponent;
+export default ProgressComponent

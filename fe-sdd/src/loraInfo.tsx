@@ -1,32 +1,34 @@
-import { useEffect, useState } from 'react';
-import { getLoraInfos, LoraInfo } from './api/api';
+import { useEffect, useState } from 'react'
+import { getLoraInfos, LoraInfo } from './api/api'
 
 const itemStyles = {
   display: 'flex',
   alignItems: 'center',
-};
+}
 
 const textStyles = {
   marginRight: '10px',
-};
+}
 
-const Item = ({ item }: {item: LoraInfo}) => {
-  const [buttonText, setButtonText] = useState('COPY');
+const Item = ({ item }: { item: LoraInfo }) => {
+  const defaultBtnText = 'COPY'
+  const [buttonText, setButtonText] = useState(defaultBtnText)
 
   const copyToClipboard = (token: string) => {
-    navigator.clipboard.writeText(token)
+    navigator.clipboard
+      .writeText(token)
       .then(() => {
-        console.log('Copied to clipboard:', token);
-        setButtonText('✔✔✔');
+        console.log('Copied to clipboard:', token)
+        setButtonText('✔✔✔')
 
         setTimeout(() => {
-          setButtonText('Copy');
-        }, 3000); // Reset button text after 3 seconds
+          setButtonText(defaultBtnText)
+        }, 3000) // Reset button text after 3 seconds
       })
       .catch((error) => {
-        console.error('Failed to copy to clipboard:', error);
-      });
-  };
+        console.error('Failed to copy to clipboard:', error)
+      })
+  }
 
   return (
     <div style={itemStyles}>
@@ -35,11 +37,11 @@ const Item = ({ item }: {item: LoraInfo}) => {
       </p>
       <button onClick={() => copyToClipboard(item.token)}>{buttonText}</button>
     </div>
-  );
-};
+  )
+}
 
 const LoraInfoComponent = () => {
-  const [loras, setLora] = useState<LoraInfo[]>([]);
+  const [loras, setLora] = useState<LoraInfo[]>([])
 
   const getLora = async () => {
     setLora(await getLoraInfos())
@@ -47,20 +49,22 @@ const LoraInfoComponent = () => {
 
   useEffect(() => {
     getLora()
-  }, []);
+  }, [])
 
   if (loras.length > 0) {
-    return <div>
-      <h2>LoraInfo</h2>
+    return (
       <div>
-      {loras.map((item, index) => {
-        return <Item key={index} item={item} />;
-      })}
+        <h2>LoraInfo</h2>
+        <div>
+          {loras.map((item, index) => {
+            return <Item key={index} item={item} />
+          })}
+        </div>
       </div>
-    </div>
+    )
   }
 
   return <div></div>
-};
+}
 
-export default LoraInfoComponent;
+export default LoraInfoComponent

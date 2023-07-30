@@ -1,50 +1,48 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { downloadFile } from './api/api';
+import React, { useState, ChangeEvent, FormEvent } from 'react'
+import { downloadFile } from './api/api'
 
 type Option = {
-  value: string;
-  label: string;
-};
+  value: string
+  label: string
+}
 
 const options: Option[] = [
   { value: 'models/Lora', label: 'Lora' },
   { value: 'models/Stable-Diffusion', label: 'Model' },
-];
-
+]
 
 const UrlInput: React.FC = () => {
-  const [url, setUrl] = useState('');
-  const [selectedOption, setSelectedOption] = useState(options[0].value);
-
+  const [url, setUrl] = useState('')
+  const [selectedOption, setSelectedOption] = useState(options[0].value)
 
   const handleFolderChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedOption(event.target.value);
-  };
+    setSelectedOption(event.target.value)
+  }
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setUrl(event.target.value);
-  };
+    setUrl(event.target.value)
+  }
 
   function isValidUrl(url: string): boolean {
     // Regular expression to validate URLs
     const urlRegex = new RegExp(
-      "^(https?:\\/\\/)?" + // protocol
-      "((([a-zA-Z\\d]([a-zA-Z\\d-]{0,61}[a-zA-Z\\d])?)\\.)+[a-zA-Z]{2,}|" + // domain name
-      "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
-      "(\\:\\d+)?(\\/[-a-zA-Z\\d%@_.~+&:]*)*" + // port and path
-      "(\\?[;&a-zA-Z\\d%@_.,~+&:=-]*)?" + // query string
-      "(\\#[-a-zA-Z\\d_]*)?$", // fragment locator
-      "i"
-    );
-  
-    return urlRegex.test(url);
+      '^(https?:\\/\\/)?' + // protocol
+        '((([a-zA-Z\\d]([a-zA-Z\\d-]{0,61}[a-zA-Z\\d])?)\\.)+[a-zA-Z]{2,}|' + // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-zA-Z\\d%@_.~+&:]*)*' + // port and path
+        '(\\?[;&a-zA-Z\\d%@_.,~+&:=-]*)?' + // query string
+        '(\\#[-a-zA-Z\\d_]*)?$', // fragment locator
+      'i',
+    )
+
+    return urlRegex.test(url)
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    
+    event.preventDefault()
+
     if (!isValidUrl(url)) {
-      alert("Invalid URL")
+      alert('Invalid URL')
       return
     }
 
@@ -52,11 +50,15 @@ const UrlInput: React.FC = () => {
     if (message) {
       alert(message)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit}>
-      <select className="select select-bordered w-full max-w-xs" value={selectedOption} onChange={handleFolderChange}>
+      <select
+        className="select select-bordered w-full max-w-xs"
+        value={selectedOption}
+        onChange={handleFolderChange}
+      >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -66,8 +68,7 @@ const UrlInput: React.FC = () => {
       <input type="text" value={url} onChange={handleInputChange} />
       <button type="submit">Send Request</button>
     </form>
-  );
-};
+  )
+}
 
-
-export default UrlInput;
+export default UrlInput
