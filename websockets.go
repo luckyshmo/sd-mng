@@ -24,20 +24,12 @@ func NewWebSockets() *WebSockets {
 func (ws *WebSockets) ProgressHandler(conn *websocket.Conn) {
 	ws.connPool[conn.Config().Origin.String()] = conn
 	for {
-		time.Sleep(time.Millisecond * 100)
+		time.Sleep(time.Millisecond * 10000)
 		err := websocket.Message.Send(conn, Message{"1111", "kek.file", 75})
 		if err != nil {
 			fmt.Println("ERROR sending fake message: ", err)
 		}
 	}
-	// fmt.Println("NEW CON: ", conn.Config().Origin)
-	// for {
-	// 	message := <-ws.connPool
-
-	// }
-
-	// fmt.Println("conn closed")
-	// conn.Close()
 }
 
 func (ws *WebSockets) Send(origin string, msg []byte) {
