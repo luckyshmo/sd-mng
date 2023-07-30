@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"log"
+	"net/http"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
 type Messenger interface {
@@ -21,23 +22,41 @@ func NewWebSockets() *WebSockets {
 	}
 }
 
-func (ws *WebSockets) ProgressHandler(conn *websocket.Conn) {
-	ws.connPool[conn.Config().Origin.String()] = conn
-	for {
-		time.Sleep(time.Millisecond * 10000)
-		err := websocket.Message.Send(conn, Message{"1111", "kek.file", 75})
+var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }} // use default options
+
+func (ws *WebSockets) ProgressHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		c, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			fmt.Println("ERROR sending fake message: ", err)
+			log.Print("upgrade:", err)
+			return
+		}
+		origin := r.Header.Get("Origin")
+		ws.connPool[origin] = c
+		for {
+			t, _, err := c.ReadMessage()
+			if err != nil {
+				fmt.Println(origin, ": read msg: ", err)
+				c.Close()
+				delete(ws.connPool, origin)
+				return
+			}
+			if t == websocket.CloseMessage {
+				fmt.Println("close code for origin: ", origin)
+				c.Close()
+				delete(ws.connPool, origin)
+				return
+			}
 		}
 	}
 }
 
 func (ws *WebSockets) Send(origin string, msg []byte) {
 	if conn, ok := ws.connPool[origin]; ok {
-		err := websocket.Message.Send(conn, string(msg))
+		err := conn.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			fmt.Println("Error sending message:", err)
-			return
+			delete(ws.connPool, origin)
 		}
 		return
 	}

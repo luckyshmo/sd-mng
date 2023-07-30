@@ -7,8 +7,6 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-
-	"golang.org/x/net/websocket"
 )
 
 //go:embed fe-sdd/build
@@ -22,7 +20,7 @@ func main() {
 	}
 	ws := NewWebSockets()
 	d := NewDownloader(ws)
-	http.Handle("/progress", websocket.Handler(ws.ProgressHandler))
+	http.Handle("/progress", ws.ProgressHandler())
 	http.Handle("/info/lora", corsHandler(loraInfoHandler(d)))
 	http.HandleFunc("/", corsHandler(downloadHandler(d)))
 	fmt.Println("Server listening on port 8080...")
