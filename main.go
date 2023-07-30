@@ -14,8 +14,12 @@ import (
 //go:embed fe-sdd/build
 var content embed.FS
 
+var production = false
+
 func main() {
-	go runFE()
+	if production {
+		go runFE()
+	}
 	ws := NewWebSockets()
 	d := NewDownloader(ws)
 	http.Handle("/progress", websocket.Handler(ws.ProgressHandler))
