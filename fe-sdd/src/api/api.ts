@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const address = process.env.REACT_APP_API_URL!;
+const address = import.meta.env.VITE_API_URL!;
 
 export interface LoraInfo {
   name: string

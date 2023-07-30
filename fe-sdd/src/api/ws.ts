@@ -1,6 +1,6 @@
 import { DownloadModel, downloadStore } from "../store/store";
 
-const WS_URL =  process.env.REACT_APP_WS_URL!
+const WS_URL =  import.meta.env.VITE_WS_URL!
 
 class WebSocketConn {
   socket: WebSocket | null = null;
