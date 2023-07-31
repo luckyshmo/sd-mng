@@ -2,6 +2,8 @@ import React from 'react'
 import WebSocketConn from './api/ws'
 import { useEffect } from 'react'
 import NavBar from './components/nav'
+import { BrowserRouter } from 'react-router-dom'
+
 const App: React.FC = () => {
   useEffect(() => {
     const webSocketConnection = new WebSocketConn()
@@ -15,7 +17,11 @@ const App: React.FC = () => {
     }
   }, [])
 
-  return <NavBar />
+  return (
+    <BrowserRouter>
+      <NavBar />
+    </BrowserRouter>
+  )
 }
 
 export default App

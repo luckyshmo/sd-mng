@@ -12,7 +12,7 @@ const options: Option[] = [
   { value: 'models/Stable-Diffusion', label: 'Model' },
 ]
 
-const UrlInput: React.FC = () => {
+const Downloader: React.FC = () => {
   const [url, setUrl] = useState('')
   const [selectedOption, setSelectedOption] = useState(options[0].value)
 
@@ -82,4 +82,4 @@ const UrlInput: React.FC = () => {
   )
 }
 
-export default UrlInput
+export default Downloader

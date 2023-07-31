@@ -34,7 +34,7 @@ const Item = ({ loraInfo }: { loraInfo: LoraInfo }) => {
   )
 }
 
-const LoraInfoComponent = () => {
+const LoraInfoComponent: React.FC = () => {
   const [loras, setLora] = useState<LoraInfo[]>([])
 
   const getLora = async () => {
@@ -48,7 +48,6 @@ const LoraInfoComponent = () => {
   if (loras.length > 0) {
     return (
       <div>
-        <h2>LoraInfo</h2>
         <div>
           {loras.map((item, index) => {
             return <Item key={index} loraInfo={item} />
