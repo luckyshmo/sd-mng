@@ -10,7 +10,12 @@ import (
 
 // const id = "10a4985d-0713-462e-a9d6-767bf91e4fd7"
 
-func getMangaInfo(id string) (*md.Manga, error) {
+type MangaPreviewInfo struct {
+	Info    md.MangaInfo
+	Volumes []md.VolumeSorted
+}
+
+func getMangaInfo(id string) (*MangaPreviewInfo, error) {
 	manga, err := download.MangadexSkeleton(id)
 	if err != nil {
 		return nil, fmt.Errorf("download skeleton: %w", err)
@@ -24,17 +29,34 @@ func getMangaInfo(id string) (*md.Manga, error) {
 
 	formats.PrintSummary(manga)
 
-	covers, err := getCovers(manga)
+	coverPaths, err := getCoverPaths(manga)
 	if err != nil {
 		return nil, fmt.Errorf("get covers: %w", err)
 	}
-	*manga = manga.WithCovers(covers)
+
+	fmt.Println(coverPaths)
+	manga = manga.WithCoverPaths(coverPaths)
+
+	volumes := manga.Sorted()
+	sortedVolumes := make([]md.VolumeSorted, len(volumes))
+	for i, v := range volumes {
+		sortedVolumes[i] = md.VolumeSorted{
+			Info:      v.Info,
+			Chapters:  v.Sorted(),
+			CoverPath: v.CoverPath,
+		}
+	}
+	return &MangaPreviewInfo{manga.Info, sortedVolumes}, nil
+
+	// covers, err := getCovers(manga)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("get covers: %w", err)
+	// }
+	// *manga = manga.WithCovers(covers)
 
 	// for _, volume := range manga.Sorted() {
 	// 	if err := handleVolume(*manga, volume); err != nil {
 	// 		return nil, fmt.Errorf("volume %v: %w", volume.Info.Identifier, err)
 	// 	}
 	// }
-
-	return manga, nil
 }

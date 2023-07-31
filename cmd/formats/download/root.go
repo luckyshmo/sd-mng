@@ -76,6 +76,18 @@ func MangadexCovers(manga *md.Manga) (md.ImageList, error) {
 	}
 }
 
+func MangadexCoverPath(manga *md.Manga) (md.PathList, error) {
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
+	covers, err := mangadexClient.FetchCovers(ctx, manga.Info.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return covers, nil
+}
+
 func MangadexPages(chapterList md.ChapterList, policy DataSaverPolicy) (md.ImageList, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()

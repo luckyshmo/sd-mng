@@ -37,6 +37,15 @@ func getCovers(manga *md.Manga) (md.ImageList, error) {
 	return covers, nil
 }
 
+func getCoverPaths(manga *md.Manga) (md.PathList, error) {
+	covers, err := download.MangadexCoverPath(manga)
+	if err != nil {
+		return nil, fmt.Errorf("mangadex: %w", err)
+	}
+
+	return covers, nil
+}
+
 func sortFromFlags(cl md.ChapterList) (md.ChapterList, error) {
 	lang := language.Make("en")
 	cl = filter.FilterByLanguage(cl, lang)

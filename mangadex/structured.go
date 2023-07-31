@@ -11,9 +11,17 @@ type Manga struct {
 }
 
 type Volume struct {
-	Info     VolumeInfo
-	Chapters map[Identifier]Chapter
-	Cover    image.Image
+	Info      VolumeInfo
+	Chapters  map[Identifier]Chapter
+	Cover     image.Image
+	CoverPath string
+}
+
+type VolumeSorted struct {
+	Info      VolumeInfo
+	Chapters  []Chapter
+	Cover     image.Image
+	CoverPath string
 }
 
 type Chapter struct {
@@ -157,6 +165,25 @@ func (m Manga) WithCovers(covers ImageList) Manga {
 	}
 
 	return Manga{
+		Info:    m.Info,
+		Volumes: vols,
+	}
+}
+
+func (m Manga) WithCoverPaths(covers PathList) *Manga {
+	vols := make(map[Identifier]Volume)
+	for idx, vol := range m.Volumes {
+		vol.Cover = nil
+		vols[idx] = vol
+	}
+	for _, it := range covers {
+		if vol, ok := vols[it.VolumeIdentifier]; ok {
+			vol.CoverPath = it.DataURL
+			vols[it.VolumeIdentifier] = vol
+		}
+	}
+
+	return &Manga{
 		Info:    m.Info,
 		Volumes: vols,
 	}
