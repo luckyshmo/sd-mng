@@ -9,10 +9,13 @@ function ProgressItems() {
     <div>
       {downloadStore.downloads.map((item, index) => {
         return (
-          <div key={index}>
-            <p>
-              {item.name}: {item.percentage}%
-            </p>
+          <div className="flex items-center m-1" key={index}>
+            <progress
+              className="progress progress-secondary w-56"
+              value={item.percentage}
+              max="100"
+            ></progress>
+            <p className="ml-2">{item.name}</p>
           </div>
         )
       })}

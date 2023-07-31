@@ -1,16 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getLoraInfos, LoraInfo } from './api/api'
+import { getLoraInfos, LoraInfo } from '../api/api'
 
-const itemStyles = {
-  display: 'flex',
-  alignItems: 'center',
-}
-
-const textStyles = {
-  marginRight: '10px',
-}
-
-const Item = ({ item }: { item: LoraInfo }) => {
+const Item = ({ loraInfo }: { loraInfo: LoraInfo }) => {
   const defaultBtnText = 'COPY'
   const [buttonText, setButtonText] = useState(defaultBtnText)
 
@@ -31,11 +22,14 @@ const Item = ({ item }: { item: LoraInfo }) => {
   }
 
   return (
-    <div style={itemStyles}>
-      <p style={textStyles}>
-        {item.name}: {item.token}
-      </p>
-      <button onClick={() => copyToClipboard(item.token)}>{buttonText}</button>
+    <div className="flex items-center m-1">
+      <button
+        className="btn btn-primary btn-xs btn-outline swap"
+        onClick={() => copyToClipboard(loraInfo.token)}
+      >
+        {buttonText}
+      </button>
+      <p className="ml-2">{loraInfo.name}</p>
     </div>
   )
 }
@@ -57,7 +51,7 @@ const LoraInfoComponent = () => {
         <h2>LoraInfo</h2>
         <div>
           {loras.map((item, index) => {
-            return <Item key={index} item={item} />
+            return <Item key={index} loraInfo={item} />
           })}
         </div>
       </div>

@@ -1,10 +1,7 @@
 import React from 'react'
-import UrlInput from './UrlInput'
-import ProgressComponent from './progress'
-import LoraInfoComponent from './loraInfo'
 import WebSocketConn from './api/ws'
 import { useEffect } from 'react'
-
+import NavBar from './components/nav'
 const App: React.FC = () => {
   useEffect(() => {
     const webSocketConnection = new WebSocketConn()
@@ -18,15 +15,7 @@ const App: React.FC = () => {
     }
   }, [])
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold underline bg-slate-400">Hello world!</h1>
-      <h1>Request Sender</h1>
-      <UrlInput />
-      <LoraInfoComponent />
-      <ProgressComponent />
-    </div>
-  )
+  return <NavBar />
 }
 
 export default App

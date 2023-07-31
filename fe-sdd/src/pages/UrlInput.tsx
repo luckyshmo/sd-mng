@@ -1,5 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react'
-import { downloadFile } from './api/api'
+import { downloadFile } from '../api/api'
+import DownloadProgress from '../components/downloadProgress'
 
 type Option = {
   value: string
@@ -53,21 +54,31 @@ const UrlInput: React.FC = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <select
-        className="select select-bordered w-full max-w-xs"
-        value={selectedOption}
-        onChange={handleFolderChange}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <input type="text" value={url} onChange={handleInputChange} />
-      <button type="submit">Send Request</button>
-    </form>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <select
+          className="select select-secondary w-full max-w-xs"
+          value={selectedOption}
+          onChange={handleFolderChange}
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          className="input input-bordered input-secondary w-full max-w-xs"
+          value={url}
+          onChange={handleInputChange}
+        />
+        <button className="btn btn-primary" type="submit">
+          Send Request
+        </button>
+      </form>
+      <DownloadProgress />
+    </div>
   )
 }
 
