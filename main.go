@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-//go:embed fe-sdd/build
+//go:embed fe-sdd/dist
 var content embed.FS
 
 var production = false
