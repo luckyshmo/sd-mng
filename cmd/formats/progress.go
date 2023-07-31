@@ -57,12 +57,3 @@ func TitledProgress(title string) CliProgress {
 
 	return CliProgress{bar, true}
 }
-
-func VanishingProgress(title string) CliProgress {
-	bar := pb.New(0).SetTemplate(progressTemplate)
-	bar.Set("prefix", title)
-	bar.Set(pb.CleanOnFinish, true)
-	bar.Start()
-
-	return CliProgress{bar, true}
-}

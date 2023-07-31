@@ -10,12 +10,11 @@ import (
 	"golang.org/x/text/language"
 
 	"kek.com/cmd/filter"
-	"kek.com/cmd/formats"
 	"kek.com/cmd/formats/download"
 	md "kek.com/mangadex"
 )
 
-func getChapters(manga md.Manga, id string) (md.ChapterList, error) {
+func getChapters(manga *md.Manga, id string) (md.ChapterList, error) {
 	chapters, err := download.MangadexChapters(id)
 	if err != nil {
 		return nil, fmt.Errorf("mangadex: %w", err)
@@ -30,13 +29,10 @@ func getChapters(manga md.Manga, id string) (md.ChapterList, error) {
 }
 
 func getCovers(manga *md.Manga) (md.ImageList, error) {
-	p := formats.VanishingProgress("Covers")
-	covers, err := download.MangadexCovers(manga, p)
+	covers, err := download.MangadexCovers(manga)
 	if err != nil {
-		p.Cancel("Error")
 		return nil, fmt.Errorf("mangadex: %w", err)
 	}
-	p.Done()
 
 	return covers, nil
 }

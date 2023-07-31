@@ -98,7 +98,7 @@ func (c Chapter) Sorted() []image.Image {
 	return result
 }
 
-func (m Manga) WithChapters(chapters ChapterList) Manga {
+func (m Manga) WithChapters(chapters ChapterList) *Manga {
 	vols := make(map[Identifier]Volume)
 	for _, chapter := range chapters {
 		chapID := chapter.Info.Identifier
@@ -116,7 +116,7 @@ func (m Manga) WithChapters(chapters ChapterList) Manga {
 		}
 	}
 
-	return Manga{
+	return &Manga{
 		Info:    m.Info,
 		Volumes: vols,
 	}

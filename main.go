@@ -20,15 +20,18 @@ func main() {
 	}
 	ws := NewWebSockets()
 	d := NewDownloader(ws)
+
+	http.Handle("/upscale/info", corsHandler(magadexInfoHandler()))
+	http.Handle("/", corsHandler(downloadHandler(d)))
 	http.Handle("/progress", ws.ProgressHandler())
 	http.Handle("/info/lora", corsHandler(loraInfoHandler(d)))
-	http.HandleFunc("/", corsHandler(downloadHandler(d)))
+
 	fmt.Println("Server listening on port 8080...")
 	http.ListenAndServe(":8080", nil)
 }
 
 func runFE() {
-	buildFolder, err := fs.Sub(content, "fe-sdd/build")
+	buildFolder, err := fs.Sub(content, "fe-sdd/dist")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,6 +59,38 @@ func loraInfoHandler(d *Downloader) http.HandlerFunc {
 
 		// Marshal the array into JSON
 		jsonData, err := json.Marshal(info)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Set the Content-Type header
+		w.Header().Set("Content-Type", "application/json")
+
+		// Write the JSON data to the response
+		_, err = w.Write(jsonData)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func magadexInfoHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.URL.Query().Get("id")
+		if id == "" {
+			http.Error(w, "Please provide a URL to download.", http.StatusBadRequest)
+			return
+		}
+
+		mng, err := getMangaInfo(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		jsonData, err := json.Marshal(mng)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

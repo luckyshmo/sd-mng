@@ -104,6 +104,7 @@ func (c *Client) doJSON(ctx context.Context, method, ref string, result, body in
 		}
 	}
 
+	fmt.Println(url.String()) //! del
 	req, err := http.NewRequestWithContext(ctx, method, url.String(), rw)
 	if err != nil {
 		return fmt.Errorf("prepare: %w", err)

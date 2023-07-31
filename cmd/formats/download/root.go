@@ -14,7 +14,6 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"golang.org/x/sync/errgroup"
-	"kek.com/cmd/formats"
 	md "kek.com/mangadex"
 )
 
@@ -46,7 +45,7 @@ func MangadexChapters(mangaID string) (md.ChapterList, error) {
 	return mangadexClient.FetchChapters(context.TODO(), mangaID)
 }
 
-func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
+func MangadexCovers(manga *md.Manga) (md.ImageList, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
@@ -59,7 +58,6 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 	go func() {
 		for _, path := range covers {
 			coverPaths <- path
-			p.Increase(1)
 		}
 		close(coverPaths)
 	}()
@@ -68,7 +66,6 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 
 	results := make(md.ImageList, len(covers))
 	for coverImage := range coverImages {
-		p.Add(1)
 		results = append(results, coverImage)
 	}
 
