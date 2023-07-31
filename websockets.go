@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -13,7 +14,8 @@ type Messenger interface {
 }
 
 type WebSockets struct {
-	connPool map[string]*websocket.Conn
+	sync.Mutex //! can cause really big performance issues on locked MU while write.
+	connPool   map[string]*websocket.Conn
 }
 
 func NewWebSockets() *WebSockets {
@@ -32,9 +34,11 @@ func (ws *WebSockets) ProgressHandler() http.HandlerFunc {
 			return
 		}
 		origin := r.Header.Get("Origin")
+		ws.Lock()
 		ws.connPool[origin] = c
+		ws.Unlock()
 		for {
-			t, _, err := c.ReadMessage()
+			t, _, err := c.ReadMessage() //! can we concurrently read and write?
 			if err != nil {
 				fmt.Println(origin, ": read msg: ", err)
 				c.Close()
@@ -52,6 +56,8 @@ func (ws *WebSockets) ProgressHandler() http.HandlerFunc {
 }
 
 func (ws *WebSockets) Send(origin string, msg []byte) {
+	ws.Lock()
+	defer ws.Unlock()
 	if conn, ok := ws.connPool[origin]; ok {
 		err := conn.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
