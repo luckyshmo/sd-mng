@@ -65,7 +65,7 @@ const NavBar = () => {
           <div className="flex-none hidden lg:block">
             <ul className="menu menu-horizontal">
               {paths.map((p) => (
-                <li>
+                <li key={p.path}>
                   <Link to={p.path}>{p.name}</Link>
                 </li>
               ))}
@@ -85,7 +85,7 @@ const NavBar = () => {
         <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
         <ul className="menu p-4 w-80 h-full bg-base-200">
           {paths.map((p) => (
-            <li>
+            <li key={p.path}>
               <Link to={p.path}>{p.name}</Link>
             </li>
           ))}
