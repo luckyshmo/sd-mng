@@ -41,14 +41,18 @@ func (ws *WebSockets) ProgressHandler() http.HandlerFunc {
 			t, _, err := c.ReadMessage() //! can we concurrently read and write?
 			if err != nil {
 				fmt.Println(origin, ": read msg: ", err)
+				ws.Lock()
 				c.Close()
 				delete(ws.connPool, origin)
+				ws.Unlock()
 				return
 			}
 			if t == websocket.CloseMessage {
 				fmt.Println("close code for origin: ", origin)
+				ws.Lock()
 				c.Close()
 				delete(ws.connPool, origin)
+				ws.Unlock()
 				return
 			}
 		}
