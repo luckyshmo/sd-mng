@@ -11,6 +11,7 @@ export interface MangaInfo {
 }
 
 export interface Volume {
+  UID: string
   Info: VolumeInfo
   Chapters: Chapter[]
   Cover: any
@@ -22,6 +23,7 @@ export interface VolumeInfo {
 }
 
 export interface Chapter {
+  UID: string
   Info: ChapterInfo
   Pages: Pages
 }

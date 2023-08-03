@@ -1,14 +1,41 @@
 import { useEffect, useState } from 'react'
 import { getMangaPreview } from '../api/api'
 import { Manga, Volume, Chapter } from '../api/models'
+import Checkbox from '../components/checkBox'
+import { observer } from 'mobx-react-lite'
+import { chapterStore } from '../store/chapters'
 
-const ChapterRaw = ({ ch, index, Prefix }: { ch: Chapter; index: string; Prefix: JSX.Element }) => {
-  console.log('ch: ', index)
+const ChapterView = ({ ch, vuid, Prefix }: { ch: Chapter; vuid: string; Prefix: JSX.Element }) => {
+  const chapters = chapterStore.volToChapters.get(vuid)
+  console.log('render CH: ', ch.UID)
+
+  const [isChecked, setIsChecked] = useState(chapters?.has(ch.UID))
+
+  useEffect(() => {
+    const has = chapters?.has(ch.UID)
+    console.log('🚀 ~ file: upscale.tsx:15 ~ useEffect ~ has:', has)
+    setIsChecked(has)
+  }, [chapters?.size, chapters, ch.UID])
+
+  const handleChange = () => {
+    if (!isChecked) {
+      chapterStore.addChapter(vuid, ch.UID)
+    } else {
+      console.log('remove: ', chapterStore.removeChapter(vuid, ch.UID))
+    }
+  }
+
+  // console.log('ch: ', ch.Info.Identifier)
   return (
-    <div key={index} className="flex ml-2 text-xl">
+    <div key={ch.UID} className="flex ml-2 text-xl">
       {Prefix}
       <div className="justify-center items-center">
-        <input id={index} type="checkbox" className="checkbox checkbox-xs mr-2" />
+        <input
+          onChange={() => handleChange()}
+          checked={isChecked}
+          type="checkbox"
+          className="checkbox checkbox-xs mr-2"
+        />
       </div>
       <p className="w-10 overflow-hidden">{ch.Info.Identifier}</p>
       <p className="ml-2">{ch.Info.Title}</p>
@@ -16,15 +43,30 @@ const ChapterRaw = ({ ch, index, Prefix }: { ch: Chapter; index: string; Prefix:
   )
 }
 
+const ChapterObserver = observer(ChapterView)
+
 const VolumeView = ({ v, index: volumeIndex }: { v: Volume; index: string }) => {
-  var chapterIDs: string[] = []
-  const [checked, setChecked] = useState<string[]>([])
+  const chapters = chapterStore.volToChapters.get(v.UID)
 
-  function handleCheckboxesCheckAll(checked: any, isChecked: boolean) {
-    setChecked(isChecked ? chapterIDs : [])
+  const [isChecked, setIsChecked] = useState(chapters?.size === v.Chapters.length)
+  const [isIndeterminate, setIsIndeterminate] = useState(
+    chapters?.size !== v.Chapters.length && chapters?.size !== 0,
+  )
+
+  useEffect(() => {
+    setIsChecked(chapters?.size === v.Chapters.length)
+    setIsIndeterminate(chapters?.size !== v.Chapters.length && chapters?.size !== 0)
+  }, [chapters?.size, v.Chapters.length])
+
+  function handleCheckboxesCheckAll() {
+    if (!isChecked) {
+      chapterStore.checkVolume(v)
+    } else {
+      chapterStore.uncheckVolume(v.UID)
+    }
+    setIsChecked(!isChecked)
+    setIsIndeterminate(false)
   }
-
-  console.log('vol: ', volumeIndex)
 
   const midPrefix = (
     <p className="w-6" style={{ marginLeft: '3px' }}>
@@ -39,19 +81,18 @@ const VolumeView = ({ v, index: volumeIndex }: { v: Volume; index: string }) => 
   )
 
   return (
-    <div key={volumeIndex}>
+    <div key={v.UID}>
       <details className="collapse  hover:bg-base-300">
         <summary className="m-2, p-2">
           <div className="flex">
             <div className="text-center w-14 flex">
               <label className="m-auto justify-center items-center">
-                <input
-                  id={volumeIndex}
-                  // indeterminate={checked.length > 0 && checked.length < chapterIDs.length}
-                  checked={checked.length === chapterIDs.length}
-                  onChange={() => handleCheckboxesCheckAll}
-                  type="checkbox"
-                  className="checkbox"
+                <Checkbox
+                  onChange={() => {
+                    handleCheckboxesCheckAll()
+                  }}
+                  checked={isChecked}
+                  indeterminate={isIndeterminate}
                 />
               </label>
             </div>
@@ -70,12 +111,10 @@ const VolumeView = ({ v, index: volumeIndex }: { v: Volume; index: string }) => 
         </summary>
         <div className="collapse-content">
           {v.Chapters.map((ch, chIndex) => {
-            const chID = volumeIndex + '-' + chIndex.toString()
-            chapterIDs.push(chID)
             if (v.Chapters.length - 1 !== chIndex) {
-              return <ChapterRaw ch={ch} index={chID} Prefix={midPrefix} />
+              return <ChapterObserver ch={ch} vuid={v.UID} Prefix={midPrefix} />
             }
-            return <ChapterRaw ch={ch} index={chID} Prefix={endPrefix} />
+            return <ChapterObserver ch={ch} vuid={v.UID} Prefix={endPrefix} />
           })}
         </div>
       </details>
@@ -84,6 +123,8 @@ const VolumeView = ({ v, index: volumeIndex }: { v: Volume; index: string }) => 
   )
 }
 
+const VolumeObserver = observer(VolumeView)
+
 const Upscale = () => {
   const [manga, setManga] = useState<Manga | null>(null)
 
@@ -91,6 +132,7 @@ const Upscale = () => {
     // declare the data fetching function
     const fetchData = async () => {
       const data = await getMangaPreview('10a4985d-0713-462e-a9d6-767bf91e4fd7')
+      chapterStore.init(data.Volumes)
       setManga(data)
     }
 
@@ -102,15 +144,11 @@ const Upscale = () => {
 
   if (manga) {
     return (
-      <div className="max-w-5xl m-auto my-6" style={{ width: '50%' }}>
-        <div className="overflow-x-auto">
-          <div className="table">
-            <div>
-              {manga.Volumes.map((v, index) => (
-                <VolumeView v={v} index={index.toString()} />
-              ))}
-            </div>
-          </div>
+      <div className="max-w-5xl m-auto my-6 overflow-x-auto table" style={{ width: '50%' }}>
+        <div>
+          {manga.Volumes.map((v, index) => (
+            <VolumeObserver v={v} index={index.toString()} />
+          ))}
         </div>
       </div>
     )
