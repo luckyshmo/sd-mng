@@ -7,13 +7,11 @@ import { chapterStore } from '../store/chapters'
 
 const ChapterView = ({ ch, vuid, Prefix }: { ch: Chapter; vuid: string; Prefix: JSX.Element }) => {
   const chapters = chapterStore.volToChapters.get(vuid)
-  console.log('render CH: ', ch.UID)
 
   const [isChecked, setIsChecked] = useState(chapters?.has(ch.UID))
 
   useEffect(() => {
     const has = chapters?.has(ch.UID)
-    console.log('🚀 ~ file: upscale.tsx:15 ~ useEffect ~ has:', has)
     setIsChecked(has)
   }, [chapters?.size, chapters, ch.UID])
 
@@ -21,11 +19,10 @@ const ChapterView = ({ ch, vuid, Prefix }: { ch: Chapter; vuid: string; Prefix: 
     if (!isChecked) {
       chapterStore.addChapter(vuid, ch.UID)
     } else {
-      console.log('remove: ', chapterStore.removeChapter(vuid, ch.UID))
+      chapterStore.removeChapter(vuid, ch.UID)
     }
   }
 
-  // console.log('ch: ', ch.Info.Identifier)
   return (
     <div key={ch.UID} className="flex ml-2 text-xl">
       {Prefix}
@@ -37,7 +34,7 @@ const ChapterView = ({ ch, vuid, Prefix }: { ch: Chapter; vuid: string; Prefix: 
           className="checkbox checkbox-xs mr-2"
         />
       </div>
-      <p className="w-10 overflow-hidden">{ch.Info.Identifier}</p>
+      <p className="w-12 overflow-hidden">{ch.Info.Identifier}</p>
       <p className="ml-2">{ch.Info.Title}</p>
     </div>
   )
@@ -45,7 +42,7 @@ const ChapterView = ({ ch, vuid, Prefix }: { ch: Chapter; vuid: string; Prefix: 
 
 const ChapterObserver = observer(ChapterView)
 
-const VolumeView = ({ v, index: volumeIndex }: { v: Volume; index: string }) => {
+const VolumeView = ({ v }: { v: Volume }) => {
   const chapters = chapterStore.volToChapters.get(v.UID)
 
   const [isChecked, setIsChecked] = useState(chapters?.size === v.Chapters.length)
@@ -136,18 +133,15 @@ const Upscale = () => {
       setManga(data)
     }
 
-    // call the function
-    fetchData()
-      // make sure to catch any error
-      .catch(console.error)
+    fetchData().catch(console.error)
   }, [])
 
   if (manga) {
     return (
       <div className="max-w-5xl m-auto my-6 overflow-x-auto table" style={{ width: '50%' }}>
         <div>
-          {manga.Volumes.map((v, index) => (
-            <VolumeObserver v={v} index={index.toString()} />
+          {manga.Volumes.map((v) => (
+            <VolumeObserver v={v} />
           ))}
         </div>
       </div>
