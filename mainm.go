@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"kek.com/cmd/formats"
 	"kek.com/cmd/formats/download"
 	md "kek.com/mangadex"
@@ -41,6 +42,7 @@ func getMangaInfo(id string) (*MangaPreviewInfo, error) {
 	sortedVolumes := make([]md.VolumeSorted, len(volumes))
 	for i, v := range volumes {
 		sortedVolumes[i] = md.VolumeSorted{
+			UID:       uuid.NewString(),
 			Info:      v.Info,
 			Chapters:  v.Sorted(),
 			CoverPath: v.CoverPath,

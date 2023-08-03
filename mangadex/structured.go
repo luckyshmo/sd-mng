@@ -3,6 +3,8 @@ package mangadex
 import (
 	"image"
 	"sort"
+
+	"github.com/google/uuid"
 )
 
 type Manga struct {
@@ -18,6 +20,7 @@ type Volume struct {
 }
 
 type VolumeSorted struct {
+	UID       string
 	Info      VolumeInfo
 	Chapters  []Chapter
 	Cover     image.Image
@@ -25,6 +28,7 @@ type VolumeSorted struct {
 }
 
 type Chapter struct {
+	UID   string
 	Info  ChapterInfo
 	Pages map[int]image.Image
 }
@@ -65,7 +69,9 @@ func (m Manga) Keys() []Identifier {
 func (v Volume) Sorted() ChapterList {
 	result := make(ChapterList, 0)
 	for _, idx := range v.Keys() {
-		result = append(result, v.Chapters[idx])
+		ch := v.Chapters[idx]
+		ch.UID = uuid.NewString()
+		result = append(result, ch)
 	}
 
 	return result
