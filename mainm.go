@@ -7,6 +7,8 @@ import (
 	"kek.com/cmd/formats"
 	"kek.com/cmd/formats/download"
 	md "kek.com/mangadex"
+
+	"kek.com/cache"
 )
 
 // const id = "10a4985d-0713-462e-a9d6-767bf91e4fd7"
@@ -17,6 +19,12 @@ type MangaPreviewInfo struct {
 }
 
 func getMangaInfo(id string) (*MangaPreviewInfo, error) {
+	m, ok := cache.AppCache.Get(id)
+	if ok {
+		fmt.Println("hit")
+		return m.(*MangaPreviewInfo), nil
+	}
+
 	manga, err := download.MangadexSkeleton(id)
 	if err != nil {
 		return nil, fmt.Errorf("download skeleton: %w", err)
@@ -48,7 +56,11 @@ func getMangaInfo(id string) (*MangaPreviewInfo, error) {
 			CoverPath: v.CoverPath,
 		}
 	}
-	return &MangaPreviewInfo{manga.Info, sortedVolumes}, nil
+
+	mInfo := &MangaPreviewInfo{manga.Info, sortedVolumes}
+	cache.AppCache.Set(id, mInfo)
+
+	return mInfo, nil
 
 	// covers, err := getCovers(manga)
 	// if err != nil {
