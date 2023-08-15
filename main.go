@@ -12,7 +12,7 @@ import (
 //go:embed fe-sdd/dist
 var content embed.FS
 
-var production = false
+var production = true
 
 func main() {
 	if production {
@@ -21,7 +21,9 @@ func main() {
 	ws := NewWebSockets()
 	d := NewDownloader(ws)
 
+	http.Handle("/manga/", corsHandler(http.StripPrefix("/manga/", http.FileServer(http.Dir("./manga")))))
 	http.Handle("/upscale/info", corsHandler(magadexInfoHandler()))
+	http.Handle("/upscale/download", corsHandler(magadexDownloadHandler()))
 	http.Handle("/", corsHandler(downloadHandler(d)))
 	http.Handle("/progress", ws.ProgressHandler())
 	http.Handle("/info/lora", corsHandler(loraInfoHandler(d)))
@@ -105,6 +107,37 @@ func magadexInfoHandler() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func magadexDownloadHandler() http.HandlerFunc {
+	type DownloadRequest map[string]map[string]any
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.URL.Query().Get("id")
+		if id == "" {
+			http.Error(w, "Please provide a URL to download.", http.StatusBadRequest)
+			return
+		}
+
+		var req DownloadRequest
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if len(req) == 0 {
+			http.Error(w, "Please provide a list of chapters to download.", http.StatusBadRequest)
+			return
+		}
+
+		if downloadManga(id, req) != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprintln(w, "Manga downloaded successfully.")
 	}
 }
 

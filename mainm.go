@@ -61,16 +61,48 @@ func getMangaInfo(id string) (*MangaPreviewInfo, error) {
 	cache.AppCache.Set(id, mInfo)
 
 	return mInfo, nil
+}
 
-	// covers, err := getCovers(manga)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("get covers: %w", err)
-	// }
-	// *manga = manga.WithCovers(covers)
+func downloadManga(id string, idsToAdd map[string]map[string]interface{}) error {
+	m, ok := cache.AppCache.Get(id)
+	if !ok {
+		return fmt.Errorf("session not found") //!
+	}
 
-	// for _, volume := range manga.Sorted() {
-	// 	if err := handleVolume(*manga, volume); err != nil {
-	// 		return nil, fmt.Errorf("volume %v: %w", volume.Info.Identifier, err)
-	// 	}
-	// }
+	previewInfo := m.(*MangaPreviewInfo)
+
+	var manga md.Manga
+	manga.Volumes = make(map[md.Identifier]md.Volume)
+	manga.Info = previewInfo.Info
+	for _, volumePreview := range previewInfo.Volumes {
+		idsToAdd, ok := idsToAdd[volumePreview.UID]
+		if !ok {
+			continue
+		}
+		var vol md.Volume
+		vol.Chapters = make(map[md.Identifier]md.Chapter)
+		vol.Info = volumePreview.Info
+		for _, chapterPreview := range volumePreview.Chapters {
+			if _, ok := idsToAdd[chapterPreview.UID]; ok {
+				vol.Chapters[chapterPreview.Info.Identifier] = chapterPreview
+			}
+		}
+		if len(vol.Chapters) > 0 {
+			manga.Volumes[vol.Info.Identifier] = vol
+		}
+	}
+
+	covers, err := getCovers(&manga)
+	if err != nil {
+		return fmt.Errorf("get covers: %w", err)
+	}
+	manga = manga.WithCovers(covers) //!
+
+	for _, volume := range manga.Sorted() {
+		if err := handleVolume(manga, volume); err != nil {
+			return fmt.Errorf("volume %v: %w", volume.Info.Identifier, err)
+		}
+	}
+	fmt.Println("done")
+	return nil
 }
