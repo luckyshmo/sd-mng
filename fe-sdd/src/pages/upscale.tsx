@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getMangaPreview, downloadFilteredManga } from '../api/api'
-import { Manga, Volume, Chapter } from '../api/models'
+import { getMangaPreview, downloadFilteredManga, getStoredMangaList } from '../api/api'
+import { MangaDex, StoredManga, Volume, Chapter } from '../api/models'
 import Checkbox from '../components/checkBox'
 import { observer } from 'mobx-react-lite'
 import { chapterStore } from '../store/chapters'
@@ -123,7 +123,7 @@ const VolumeView = ({ v }: { v: Volume }) => {
 
 const VolumeObserver = observer(VolumeView)
 
-const MangaView = ({ manga }: { manga: Manga }) => {
+const MangaView = ({ manga }: { manga: MangaDex }) => {
   return (
     <div>
       {manga.Volumes.map((v, ind) => (
@@ -133,17 +133,62 @@ const MangaView = ({ manga }: { manga: Manga }) => {
   )
 }
 
+const StoredMangaView = ({ manga }: { manga: StoredManga[] }) => {
+  return (
+    <div>
+      {manga.map((m, ind) => (
+        <div key={ind} className="m-2 p-2 hover:bg-base-300 rounded-3xl">
+          <div className="flex justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="avatar">
+                <div className="mask mask-squircle w-20 h-20">
+                  <img src={'data:image/jpg;base64, ' + m.Cover} alt="volume cover" />
+                </div>
+              </div>
+              <div>
+                <div className="font-bold text-2xl">{m.Title}</div>
+                <div className="text-sm opacity-50">{m.VolumeCount} volumes</div>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <button onClick={() => {}} className="btn btn-primary">
+                Upscale
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 const Upscale = () => {
-  const [manga, setManga] = useState<Manga | null>(null)
+  const [manga, setManga] = useState<MangaDex | null>(null)
   const [mangaID, setMangaID] = useState<string>('296cbc31-af1a-4b5b-a34b-fee2b4cad542')
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [storedManga, setStoredManga] = useState<StoredManga[] | null>(null)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const storedManga = await getStoredMangaList()
+        setStoredManga(storedManga)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const fetchData = async () => {
+    setIsLoading(true)
     const mangaPreview = await getMangaPreview(mangaID).catch(console.error)
     if (mangaPreview) {
       chapterStore.init(mangaPreview.Volumes)
       setManga(mangaPreview)
     }
+    setIsLoading(false)
   }
 
   const handleClear = () => {
@@ -153,7 +198,9 @@ const Upscale = () => {
   }
 
   const handleDownload = async () => {
-    downloadFilteredManga(mangaID).catch(console.error)
+    setIsLoading(true)
+    await downloadFilteredManga(mangaID).catch(console.error)
+    setIsLoading(false)
   }
 
   if (isLoading) {
@@ -181,17 +228,22 @@ const Upscale = () => {
   }
 
   return (
-    <div className="m-auto my-4 flex">
-      <input
-        type="text"
-        placeholder="Type manga id..."
-        className="input input-bordered w-full max-w-xs mx-4"
-        value={mangaID}
-        onChange={(e) => setMangaID(e.target.value)}
-      />
-      <button onClick={fetchData} className="btn btn-primary">
-        Fetch
-      </button>
+    <div className="m-auto my-4">
+      <div className="flex">
+        <input
+          type="text"
+          placeholder="Type manga id..."
+          className="input input-bordered mx-4 w-96"
+          value={mangaID}
+          onChange={(e) => setMangaID(e.target.value)}
+        />
+        <button onClick={fetchData} className="btn btn-primary">
+          Fetch
+        </button>
+      </div>
+      <div className="m-auto my-6 overflow-x-auto table max-w-3xl">
+        <StoredMangaView manga={storedManga || []} />
+      </div>
     </div>
   )
 }

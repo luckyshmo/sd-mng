@@ -7,6 +7,9 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
+
+	"kek.com/storage"
 )
 
 //go:embed fe-sdd/dist
@@ -20,8 +23,10 @@ func main() {
 	}
 	ws := NewWebSockets()
 	d := NewDownloader(ws)
+	storage := storage.NewFSStorage()
 
-	http.Handle("/manga/", corsHandler(http.StripPrefix("/manga/", http.FileServer(http.Dir("./manga")))))
+	http.Handle("/manga/origin/info", corsHandler(GetStoredMangaInfo(storage)))
+	http.Handle("/storage/manga/", corsHandler(http.StripPrefix("/storage/manga/", http.FileServer(http.Dir(os.Getenv("MANGA_STORAGE_DIR"))))))
 	http.Handle("/upscale/info", corsHandler(magadexInfoHandler()))
 	http.Handle("/upscale/download", corsHandler(magadexDownloadHandler()))
 	http.Handle("/", corsHandler(downloadHandler(d)))
@@ -49,6 +54,30 @@ func runFE() {
 
 	log.Println("Server started on http://localhost:3000")
 	log.Fatal(server.ListenAndServe())
+}
+
+func GetStoredMangaInfo(s storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		info, err := s.GetStoredMangaInfo()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		jsonData, err := json.Marshal(info)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		_, err = w.Write(jsonData)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 }
 
 func loraInfoHandler(d *Downloader) http.HandlerFunc {

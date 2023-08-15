@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"golang.org/x/text/language"
-	"kek.com/cmd/formats"
 	md "kek.com/mangadex"
 )
 
@@ -29,7 +28,7 @@ func LoadSkeleton(directory string) (*md.Manga, error) {
 	}, nil
 }
 
-func LoadChapters(directory string, lang language.Tag, p formats.Progress) (md.ChapterList, error) {
+func LoadChapters(directory string, lang language.Tag) (md.ChapterList, error) {
 	result := make(md.ChapterList, 0)
 	volumes, err := os.ReadDir(directory)
 	if err != nil {
@@ -47,8 +46,6 @@ func LoadChapters(directory string, lang language.Tag, p formats.Progress) (md.C
 			if !chapter.IsDir() {
 				continue
 			}
-			p.Increase(1)
-			p.Add(1)
 
 			info := md.ChapterInfo{
 				Identifier:       md.NewIdentifier(chapter.Name()),
@@ -67,7 +64,7 @@ func LoadChapters(directory string, lang language.Tag, p formats.Progress) (md.C
 	return result, nil
 }
 
-func LoadPages(cl md.ChapterList, p formats.Progress) (md.ImageList, error) {
+func LoadPages(cl md.ChapterList) (md.ImageList, error) {
 	result := make(md.ImageList, 0)
 	for _, chap := range cl {
 		pages, err := os.ReadDir(chap.Info.ID)
@@ -75,10 +72,7 @@ func LoadPages(cl md.ChapterList, p formats.Progress) (md.ImageList, error) {
 			return nil, fmt.Errorf("list '%v': %w", chap.Info.Identifier, err)
 		}
 
-		p.Increase(len(pages))
 		for _, page := range pages {
-			p.Add(1)
-
 			id, err := strconv.Atoi(strings.TrimSuffix(page.Name(), path.Ext(page.Name())))
 			if err != nil {
 				continue
@@ -105,13 +99,12 @@ func LoadPages(cl md.ChapterList, p formats.Progress) (md.ImageList, error) {
 	return result, nil
 }
 
-func LoadCovers(directory string, p formats.Progress) (md.ImageList, error) {
+func LoadCovers(directory string) (md.ImageList, error) {
 	result := make(md.ImageList, 0)
 	volumes, err := os.ReadDir(directory)
 	if err != nil {
 		return nil, fmt.Errorf("list '%v': %w", directory, err)
 	}
-	p.Increase(len(volumes))
 	for _, volume := range volumes {
 		if !volume.IsDir() {
 			continue

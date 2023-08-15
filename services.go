@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"kek.com/cmd/formats"
 	"kek.com/cmd/formats/download"
 	md "kek.com/mangadex"
 
@@ -33,8 +32,6 @@ func getMangaInfo(id string) (*MangaPreviewInfo, error) {
 		return nil, fmt.Errorf("get chapters: %w", err)
 	}
 	manga = manga.WithChapters(chapters)
-
-	formats.PrintSummary(manga)
 
 	coverPaths, err := getCoverPaths(manga)
 	if err != nil {

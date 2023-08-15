@@ -1,4 +1,4 @@
-export interface Manga {
+export interface MangaDex {
   Info: MangaInfo
   Volumes: Volume[]
 }
@@ -40,3 +40,11 @@ export interface ChapterInfo {
 }
 
 export interface Pages {}
+
+export interface StoredManga {
+  Title: string
+  Cover: string
+  VolumeCount: number
+  IsUpscaled: boolean
+  AverageMegapixels: number
+}
