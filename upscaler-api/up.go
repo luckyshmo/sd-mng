@@ -1,4 +1,4 @@
-package main
+package upscale
 
 import (
 	"bytes"
@@ -27,15 +27,9 @@ type APIResponse struct {
 	Images   []string `json:"images"`
 }
 
-func main() {
-	// Check if command-line arguments are provided
-	if len(os.Args) > 1 {
-		OriginFolder = os.Args[1]
-	}
-
-	if len(os.Args) > 2 {
-		UpscaledFolder = os.Args[2]
-	}
+func Upscale(source, dist string) {
+	OriginFolder = source
+	UpscaledFolder = dist
 
 	ctx := context.Background()
 	ctx, cancelFunc := context.WithCancel(ctx)
@@ -137,7 +131,7 @@ func processFolder(basePath, relativePath string, ch chan ImageInfo) {
 	fmt.Println("processing path: ", path)
 	files, err := os.ReadDir(path)
 	if err != nil {
-		log.Printf("ERROR: read dir: %s\n", err)
+		log.Printf("ERROR: read dir %s: %v\n", path, err)
 		return
 	}
 
@@ -163,7 +157,7 @@ func processFolder(basePath, relativePath string, ch chan ImageInfo) {
 			"name": f.Name(),
 		})
 	}
-	// fmt.Println("img list:", imageList)
+
 	if len(imageList) > 0 {
 		ch <- ImageInfo{
 			imageList: imageList,
@@ -172,33 +166,6 @@ func processFolder(basePath, relativePath string, ch chan ImageInfo) {
 		}
 	}
 }
-
-// readImagesFromFolder reads images from a folder and returns the image list.
-// func readImagesFromFolder(folderPath string) ([]map[string]string, []string, error) {
-// 	files, err := os.ReadDir(folderPath)
-// 	if err != nil {
-// 		return nil, nil, err
-// 	}
-
-// 	var imageList []map[string]string
-// 	names := make([]string, len(files))
-
-// 	for i, file := range files {
-// 		names[i] = file.Name()
-
-// 		imageData, err := os.ReadFile(filepath.Join(folderPath, file.Name()))
-// 		if err != nil {
-// 			return nil, nil, err
-// 		}
-
-// 		imageList = append(imageList, map[string]string{
-// 			"data": imageDataBase64(imageData),
-// 			"name": file.Name(),
-// 		})
-// 	}
-
-// 	return imageList, names, nil
-// }
 
 // imageDataBase64 encodes image data as base64.
 func imageDataBase64(imageData []byte) string {

@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"kek.com/storage"
+	upscale "kek.com/upscaler-api"
 )
 
 //go:embed fe-sdd/dist
@@ -25,6 +26,7 @@ func main() {
 	d := NewDownloader(ws)
 	storage := storage.NewFSStorage()
 
+	http.Handle("/manga/upscale", corsHandler(upscaleHandler()))
 	http.Handle("/manga/origin/info", corsHandler(GetStoredMangaInfo(storage)))
 	http.Handle("/storage/manga/", corsHandler(http.StripPrefix("/storage/manga/", http.FileServer(http.Dir(os.Getenv("MANGA_STORAGE_DIR"))))))
 	http.Handle("/upscale/info", corsHandler(magadexInfoHandler()))
@@ -77,6 +79,20 @@ func GetStoredMangaInfo(s storage.Storage) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func upscaleHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		title := r.URL.Query().Get("title")
+		if title == "" {
+			http.Error(w, "Please provide a URL to download.", http.StatusBadRequest)
+			return
+		}
+
+		go upscale.Upscale("./manga/original/"+title, "./manga/upscaled/"+title)
+
+		fmt.Fprintln(w, "Submitted successfully.")
 	}
 }
 

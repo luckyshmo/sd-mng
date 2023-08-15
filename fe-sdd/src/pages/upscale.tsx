@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import { getMangaPreview, downloadFilteredManga, getStoredMangaList } from '../api/api'
+import {
+  getMangaPreview,
+  downloadFilteredManga,
+  getStoredMangaList,
+  upscaleManga,
+} from '../api/api'
 import { MangaDex, StoredManga, Volume, Chapter } from '../api/models'
 import Checkbox from '../components/checkBox'
 import { observer } from 'mobx-react-lite'
@@ -134,6 +139,10 @@ const MangaView = ({ manga }: { manga: MangaDex }) => {
 }
 
 const StoredMangaView = ({ manga }: { manga: StoredManga[] }) => {
+  const handleUpscale = async (mangaID: string) => {
+    upscaleManga(mangaID)
+  }
+
   return (
     <div>
       {manga.map((m, ind) => (
@@ -151,7 +160,12 @@ const StoredMangaView = ({ manga }: { manga: StoredManga[] }) => {
               </div>
             </div>
             <div className="flex items-center">
-              <button onClick={() => {}} className="btn btn-primary">
+              <button
+                onClick={() => {
+                  handleUpscale(m.Title)
+                }}
+                className="btn btn-primary"
+              >
                 Upscale
               </button>
             </div>
