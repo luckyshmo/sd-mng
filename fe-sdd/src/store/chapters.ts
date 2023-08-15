@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx'
 import { Volume, Chapter } from '../api/models'
 
 class ChapterStore {
-  volToChapters: Map<string, Set<string>> = new Map()
+  volToChapters: Map<string, Map<string, void>> = new Map()
 
   constructor() {
     makeAutoObservable(this)
@@ -10,22 +10,22 @@ class ChapterStore {
 
   init(volumes: Volume[]) {
     volumes.forEach((v) => {
-      const chSet: Set<string> = new Set()
+      const chSet: Map<string, void> = new Map()
       v.Chapters.forEach((c) => {
-        chSet.add(c.UID)
+        chSet.set(c.UID, undefined)
       })
       this.volToChapters.set(v.UID, chSet)
     })
   }
 
   uncheckVolume(vID: string) {
-    this.volToChapters = this.volToChapters.set(vID, new Set())
+    this.volToChapters = this.volToChapters.set(vID, new Map())
   }
 
   checkVolume(v: Volume) {
-    const chSet: Set<string> = new Set()
+    const chSet: Map<string, void> = new Map()
     v.Chapters.forEach((c) => {
-      chSet.add(c.UID)
+      chSet.set(c.UID, undefined)
     })
     this.volToChapters = this.volToChapters.set(v.UID, chSet)
   }
@@ -36,7 +36,7 @@ class ChapterStore {
       console.log('this should not happened')
       return
     }
-    this.volToChapters = this.volToChapters.set(vID, chapters.add(cID))
+    this.volToChapters = this.volToChapters.set(vID, chapters.set(cID, undefined))
   }
 
   removeChapter(vID: string, cID: string): boolean {

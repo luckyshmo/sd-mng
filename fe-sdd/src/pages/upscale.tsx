@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { getMangaPreview } from '../api/api'
+import { getMangaPreview, downloadFilteredManga } from '../api/api'
 import { Manga, Volume, Chapter } from '../api/models'
 import Checkbox from '../components/checkBox'
 import { observer } from 'mobx-react-lite'
 import { chapterStore } from '../store/chapters'
+import { AiOutlineDownload, AiOutlineClear } from 'react-icons/ai'
 
 const ChapterView = ({ ch, vuid, Prefix }: { ch: Chapter; vuid: string; Prefix: JSX.Element }) => {
   const chapters = chapterStore.volToChapters.get(vuid)
@@ -24,7 +25,7 @@ const ChapterView = ({ ch, vuid, Prefix }: { ch: Chapter; vuid: string; Prefix: 
   }
 
   return (
-    <div key={ch.UID} className="flex ml-2 text-xl">
+    <div className="flex ml-2 text-xl">
       {Prefix}
       <div className="justify-center items-center">
         <input
@@ -78,7 +79,7 @@ const VolumeView = ({ v }: { v: Volume }) => {
   )
 
   return (
-    <div key={v.UID}>
+    <div>
       <details className="collapse  hover:bg-base-300">
         <summary className="m-2, p-2">
           <div className="flex">
@@ -109,9 +110,9 @@ const VolumeView = ({ v }: { v: Volume }) => {
         <div className="collapse-content">
           {v.Chapters.map((ch, chIndex) => {
             if (v.Chapters.length - 1 !== chIndex) {
-              return <ChapterObserver ch={ch} vuid={v.UID} Prefix={midPrefix} />
+              return <ChapterObserver key={chIndex} ch={ch} vuid={v.UID} Prefix={midPrefix} />
             }
-            return <ChapterObserver ch={ch} vuid={v.UID} Prefix={endPrefix} />
+            return <ChapterObserver key={chIndex} ch={ch} vuid={v.UID} Prefix={endPrefix} />
           })}
         </div>
       </details>
@@ -122,32 +123,77 @@ const VolumeView = ({ v }: { v: Volume }) => {
 
 const VolumeObserver = observer(VolumeView)
 
+const MangaView = ({ manga }: { manga: Manga }) => {
+  return (
+    <div>
+      {manga.Volumes.map((v, ind) => (
+        <VolumeObserver key={ind} v={v} />
+      ))}
+    </div>
+  )
+}
+
 const Upscale = () => {
   const [manga, setManga] = useState<Manga | null>(null)
+  const [mangaID, setMangaID] = useState<string>('296cbc31-af1a-4b5b-a34b-fee2b4cad542')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  useEffect(() => {
-    // declare the data fetching function
-    const fetchData = async () => {
-      const data = await getMangaPreview('10a4985d-0713-462e-a9d6-767bf91e4fd7')
-      chapterStore.init(data.Volumes)
-      setManga(data)
+  const fetchData = async () => {
+    const mangaPreview = await getMangaPreview(mangaID).catch(console.error)
+    if (mangaPreview) {
+      chapterStore.init(mangaPreview.Volumes)
+      setManga(mangaPreview)
     }
+  }
 
-    fetchData().catch(console.error)
-  }, [])
+  const handleClear = () => {
+    setIsLoading(false)
+    setManga(null)
+    setMangaID('296cbc31-af1a-4b5b-a34b-fee2b4cad542')
+  }
+
+  const handleDownload = async () => {
+    downloadFilteredManga(mangaID).catch(console.error)
+  }
+
+  if (isLoading) {
+    return <span className="loading loading-infinity loading-lg"></span>
+  }
 
   if (manga) {
     return (
-      <div className="max-w-5xl m-auto my-6 overflow-x-auto table" style={{ width: '50%' }}>
-        <div>
-          {manga.Volumes.map((v) => (
-            <VolumeObserver v={v} />
-          ))}
+      <div>
+        <div className="m-auto my-6 overflow-x-auto table max-w-3xl">
+          {/* download and clear buttons */}
+          <div className="absolute right-[-75px] flex flex-col border border-base-300 rounded-2xl">
+            <div onClick={handleDownload} className="w-16 h-12 hover:bg-base-300 rounded-t-2xl">
+              <AiOutlineDownload className="cursor-pointer w-8 h-8 mx-4 mb-4 mt-2" />
+            </div>
+            <div onClick={handleClear} className="w-16 h-12 hover:bg-base-300 rounded-b-2xl">
+              <AiOutlineClear className="cursor-pointer w-8 h-8 mx-4 mb-4 mt-2" />
+            </div>
+          </div>
+          {/* manga view */}
+          <MangaView manga={manga} />
         </div>
       </div>
     )
   }
-  return <span className="loading loading-infinity loading-lg"></span>
+
+  return (
+    <div className="m-auto my-4 flex">
+      <input
+        type="text"
+        placeholder="Type manga id..."
+        className="input input-bordered w-full max-w-xs mx-4"
+        value={mangaID}
+        onChange={(e) => setMangaID(e.target.value)}
+      />
+      <button onClick={fetchData} className="btn btn-primary">
+        Fetch
+      </button>
+    </div>
+  )
 }
 
 export default Upscale
