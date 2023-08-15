@@ -11,8 +11,6 @@ import (
 	"kek.com/cache"
 )
 
-// const id = "10a4985d-0713-462e-a9d6-767bf91e4fd7"
-
 type MangaPreviewInfo struct {
 	Info    md.MangaInfo
 	Volumes []md.VolumeSorted
