@@ -10,4 +10,8 @@ tasks:
   run:
     desc: Run Go app with environment variables from .env.local file
     cmds:
-      - export $(grep -v '^#' .env.local | xargs) && go run . .
+      - |
+        while read -r line; do 
+          export $line
+        done < .env.local
+      - go run . .

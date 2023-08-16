@@ -10,7 +10,7 @@ import (
 	"os"
 
 	"kek.com/storage"
-	upscale "kek.com/upscaler-api"
+	"kek.com/upscaler"
 )
 
 //go:embed fe-sdd/dist
@@ -25,8 +25,14 @@ func main() {
 	ws := NewWebSockets()
 	d := NewDownloader(ws)
 	storage := storage.NewFSStorage()
+	ups := upscaler.NewSDUpscaler(upscaler.UpscalerConfig{
+		APIURL:       os.Getenv("UPSCALER_API_URL"),
+		UpscalerType: os.Getenv("UPSCALER_TYPE"),
+	})
 
-	http.Handle("/manga/upscale", corsHandler(upscaleHandler()))
+	mangaUseCase := NewMangaUC(ups, storage)
+
+	http.Handle("/manga/upscale", corsHandler(upscaleHandler(mangaUseCase)))
 	http.Handle("/manga/origin/info", corsHandler(GetStoredMangaInfo(storage)))
 	http.Handle("/storage/manga/", corsHandler(http.StripPrefix("/storage/manga/", http.FileServer(http.Dir(os.Getenv("MANGA_STORAGE_DIR"))))))
 	http.Handle("/upscale/info", corsHandler(magadexInfoHandler()))
@@ -82,7 +88,7 @@ func GetStoredMangaInfo(s storage.Storage) http.HandlerFunc {
 	}
 }
 
-func upscaleHandler() http.HandlerFunc {
+func upscaleHandler(mangaUC *MangaUC) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		title := r.URL.Query().Get("title")
 		if title == "" {
@@ -90,7 +96,11 @@ func upscaleHandler() http.HandlerFunc {
 			return
 		}
 
-		go upscale.Upscale("./manga/original/"+title, "./manga/upscaled/"+title)
+		err := mangaUC.Upscale(title)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		fmt.Fprintln(w, "Submitted successfully.")
 	}

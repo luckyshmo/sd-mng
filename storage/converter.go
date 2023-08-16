@@ -1,4 +1,4 @@
-package upscale
+package storage
 
 import (
 	"bytes"
@@ -7,8 +7,8 @@ import (
 	"image/png"
 )
 
-// ConvertToJPEG converts the input image byte slice to JPEG format.
-func ConvertToJPEG(img []byte) ([]byte, error) {
+// convertToJPEG converts the input image byte slice to JPEG format.
+func convertToJPEG(img []byte) ([]byte, error) {
 	// Create a buffer to store the JPEG image
 	jpegBuffer := new(bytes.Buffer)
 

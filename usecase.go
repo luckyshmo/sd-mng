@@ -2,17 +2,29 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 	"kek.com/cmd/formats/download"
 	md "kek.com/mangadex"
+	"kek.com/storage"
 
 	"kek.com/cache"
+	"kek.com/upscaler"
 )
 
 type MangaPreviewInfo struct {
 	Info    md.MangaInfo
 	Volumes []md.VolumeSorted
+}
+
+type MangaUC struct {
+	upscaler upscaler.Upscaler
+	storage  storage.Storage
+}
+
+func NewMangaUC(ups upscaler.Upscaler, storage storage.Storage) *MangaUC {
+	return &MangaUC{ups, storage}
 }
 
 func getMangaInfo(id string) (*MangaPreviewInfo, error) {
@@ -99,5 +111,24 @@ func downloadManga(id string, idsToAdd map[string]map[string]interface{}) error 
 		}
 	}
 	fmt.Println("done")
+	return nil
+}
+
+func (md *MangaUC) Upscale(title string) error {
+	reader := md.storage.NewReader(title)
+
+	for img, ok := reader.Next(); ok; img, ok = reader.Next() {
+		imgs, names, path := md.upscaler.Upscale(img)
+
+		if len(imgs) == 0 {
+			log.Println("no images")
+			continue
+		}
+
+		if err := md.storage.Write(imgs, names, title, path); err != nil {
+			return fmt.Errorf("write: %w", err)
+		}
+	}
+
 	return nil
 }
