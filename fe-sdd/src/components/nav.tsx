@@ -6,6 +6,22 @@ import { useEffect, useState } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import Upscale from '../pages/upscale'
 
+const ThemeSwitcher = () => {
+  const [isDark, toggle] = useState(window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const toggleTheme = () => {
+    toggle(!isDark)
+  }
+
+  useEffect(() => {
+    document.querySelector('html')!.setAttribute('data-theme', isDark ? 'synthwave' : 'cupcake')
+  }, [isDark])
+  return (
+    <label className="swap swap-rotate">
+      <input onClick={toggleTheme} type="checkbox" className="toggle" />
+    </label>
+  )
+}
+
 const NavBar = () => {
   interface Path {
     path: string
@@ -64,6 +80,7 @@ const NavBar = () => {
           <div className="flex-1 px-2 mx-2">{pageName}</div>
           <div className="flex-none hidden lg:block">
             <ul className="menu menu-horizontal">
+              <ThemeSwitcher />
               {paths.map((p) => (
                 <li key={p.path}>
                   <Link to={p.path}>{p.name}</Link>
