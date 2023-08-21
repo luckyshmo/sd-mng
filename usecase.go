@@ -132,3 +132,7 @@ func (md *MangaUC) Upscale(title string) error {
 
 	return nil
 }
+
+func (md *MangaUC) Zip(title string) error {
+	return md.storage.Zip(title)
+}

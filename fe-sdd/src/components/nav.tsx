@@ -13,7 +13,7 @@ const ThemeSwitcher = () => {
   }
 
   useEffect(() => {
-    document.querySelector('html')!.setAttribute('data-theme', isDark ? 'synthwave' : 'cupcake')
+    document.querySelector('html')!.setAttribute('data-theme', isDark ? 'dark' : 'cupcake')
   }, [isDark])
   return (
     <label className="swap swap-rotate">

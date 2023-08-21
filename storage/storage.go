@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"kek.com/storage/zipper"
 )
 
 const originalPath = "original"
@@ -24,6 +26,7 @@ type Storage interface {
 	GetStoredMangaInfo() ([]*MangaInfo, error)
 	NewReader(title string) Reader
 	Write(images []string, names []string, title, relativePath string) error
+	Zip(title string) error
 }
 
 type FSStorage struct {
@@ -127,4 +130,8 @@ func (s *FSStorage) Write(images []string, names []string, title, relativePath s
 	fmt.Println("average time spent is: ", elapsed/int64(len(images)), " ns")
 
 	return nil
+}
+
+func (s *FSStorage) Zip(title string) error {
+	return zipper.ZipFolder(s.upscaledRoot + "/" + title)
 }

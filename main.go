@@ -32,6 +32,7 @@ func main() {
 
 	mangaUseCase := NewMangaUC(ups, storage)
 
+	http.Handle("/manga/zip", corsHandler(zipHandler(mangaUseCase)))
 	http.Handle("/manga/upscale", corsHandler(upscaleHandler(mangaUseCase)))
 	http.Handle("/manga/origin/info", corsHandler(GetStoredMangaInfo(storage)))
 	http.Handle("/storage/manga/", corsHandler(http.StripPrefix("/storage/manga/", http.FileServer(http.Dir(os.Getenv("MANGA_STORAGE_DIR"))))))
@@ -88,11 +89,29 @@ func GetStoredMangaInfo(s storage.Storage) http.HandlerFunc {
 	}
 }
 
+func zipHandler(mangaUC *MangaUC) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		title := r.URL.Query().Get("title")
+		if title == "" {
+			http.Error(w, "Please provide a title to zip.", http.StatusBadRequest)
+			return
+		}
+
+		err := mangaUC.Zip(title)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprintln(w, "Zipped successfully.")
+	}
+}
+
 func upscaleHandler(mangaUC *MangaUC) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		title := r.URL.Query().Get("title")
 		if title == "" {
-			http.Error(w, "Please provide a URL to download.", http.StatusBadRequest)
+			http.Error(w, "Please provide a title to upscale.", http.StatusBadRequest)
 			return
 		}
 
@@ -102,7 +121,7 @@ func upscaleHandler(mangaUC *MangaUC) http.HandlerFunc {
 			return
 		}
 
-		fmt.Fprintln(w, "Submitted successfully.")
+		fmt.Fprintln(w, "Upscaled successfully.")
 	}
 }
 

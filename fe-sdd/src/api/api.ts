@@ -76,6 +76,25 @@ export async function upscaleManga(title: string): Promise<void> {
   }
 }
 
+export async function zipManga(title: string): Promise<void> {
+  const urlParams = new URLSearchParams({
+    title: title,
+  })
+
+  try {
+    const response = await axios.post(address + 'manga/zip?' + urlParams.toString())
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP error! Status: ${response.status}`)
+    }
+
+    return
+  } catch (error: any) {
+    console.error(`Error: ${error.message}`)
+    return error.message
+  }
+}
+
 export async function getMangaPreview(id: string): Promise<MangaDex> {
   const urlParams = new URLSearchParams({
     id: id,

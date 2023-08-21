@@ -4,6 +4,7 @@ import {
   downloadFilteredManga,
   getStoredMangaList,
   upscaleManga,
+  zipManga,
 } from '../api/api'
 import { MangaDex, StoredManga, Volume, Chapter } from '../api/models'
 import Checkbox from '../components/checkBox'
@@ -143,6 +144,10 @@ const StoredMangaView = ({ manga }: { manga: StoredManga[] }) => {
     upscaleManga(mangaID)
   }
 
+  const handleZip = async (mangaID: string) => {
+    zipManga(mangaID)
+  }
+
   return (
     <div>
       {manga.map((m, ind) => (
@@ -164,9 +169,17 @@ const StoredMangaView = ({ manga }: { manga: StoredManga[] }) => {
                 onClick={() => {
                   handleUpscale(m.Title)
                 }}
-                className="btn btn-primary"
+                className="btn btn-primary mr-2"
               >
                 Upscale
+              </button>
+              <button
+                onClick={() => {
+                  handleZip(m.Title)
+                }}
+                className="btn btn-primary"
+              >
+                Zip
               </button>
             </div>
           </div>
@@ -243,7 +256,7 @@ const Upscale = () => {
 
   return (
     <div className="m-auto my-4">
-      <div className="flex">
+      <div className="flex pr-4">
         <input
           type="text"
           placeholder="Type manga id..."

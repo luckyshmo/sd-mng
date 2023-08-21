@@ -1,4 +1,4 @@
-package main
+package zipper
 
 import (
 	"archive/zip"
@@ -10,12 +10,10 @@ import (
 	"path"
 )
 
-func main() {
-	rootFolder := "./manga" // Replace with your root folder path
-
+func ZipFolder(rootFolder string) error {
 	Volumes, err := os.ReadDir(rootFolder)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("error reading root folder: %w", err)
 	}
 
 	for _, volume := range Volumes {
@@ -23,6 +21,8 @@ func main() {
 			processVolume(volume.Name(), rootFolder+"/"+volume.Name(), "./dist")
 		}
 	}
+
+	return nil
 }
 
 type Image struct {
